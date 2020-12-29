@@ -52,6 +52,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
      *
      * */
 
+    //подключение к БД SQL
     @Override
     public void onServerStart(ServerSocketThread thread) {
         putLog("Server thread started");

@@ -5,9 +5,12 @@ import java.awt.event.ActionListener;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class ClientGUI extends JFrame implements ActionListener,
@@ -91,6 +94,7 @@ public class ClientGUI extends JFrame implements ActionListener,
             sendMessage();
         } else if (src == btnLogin) {
             connect();
+            log.append(history(tfLogin.getText()));
         } else if (src == btnDisconnect) {
             socketThread.close();
         } else {
@@ -113,13 +117,13 @@ public class ClientGUI extends JFrame implements ActionListener,
         if ("".equals(msg)) return;
         tfMessage.setText(null);
         tfMessage.grabFocus();
-//        putLog(String.format("%s: %s", username, msg));
-//        wrtMsgToLogFile(msg, username);
+        putLog(String.format("%s: %s", username, msg));
+        wrtMsgToLogFile(msg, username);
         socketThread.sendMessage(Library.getTypeBcastClient(msg));
     }
 
     private void wrtMsgToLogFile(String msg, String username) {
-        try (FileWriter out = new FileWriter("log.txt", true)) {
+        try (FileWriter out = new FileWriter("history"+tfLogin.getText()+".txt", true)) {
             out.write(username + ": " + msg + "\n");
             out.flush();
         } catch (IOException e) {
@@ -139,6 +143,23 @@ public class ClientGUI extends JFrame implements ActionListener,
                 log.setCaretPosition(log.getDocument().getLength());
             }
         });
+    }
+
+    public String history(String login){
+        StringBuilder sb=new StringBuilder();
+        try {
+            List<String> historyLines = Files.readAllLines(Paths.get("history"+tfLogin.getText()+".txt"));
+            int startPosition = 0;
+            if(historyLines.size()>100){
+                startPosition=historyLines.size()-100;
+            }
+            for (int i=startPosition;i<historyLines.size();i++){
+                sb.append(historyLines.get(i)).append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
     }
 
     private void showException(Thread t, Throwable e) {
@@ -218,7 +239,7 @@ public class ClientGUI extends JFrame implements ActionListener,
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
         handleMessage(msg);
-//        putLog(msg);
+        putLog(msg);
     }
 
     @Override

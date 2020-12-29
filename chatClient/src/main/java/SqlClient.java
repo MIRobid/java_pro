@@ -1,5 +1,6 @@
 import java.sql.*;
 
+//подключение к БД SQL
 public class SqlClient {
 
     private static Connection connection;
